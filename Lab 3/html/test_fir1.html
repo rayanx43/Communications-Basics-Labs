@@ -1,0 +1,167 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>test_fir1</title><meta name="generator" content="MATLAB 9.8"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-02-01"><meta name="DC.source" content="test_fir1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% test_fir1.m</span>
+<span class="comment">%</span>
+<span class="comment">% Script to test the FIR filter.</span>
+<span class="comment">% Global parameters</span>
+Nb = 100; <span class="comment">% Number of buffers</span>
+Ns = 128; <span class="comment">% Samples in each buffer</span>
+<span class="comment">% Generate filter coefficients</span>
+p.beta = 0.5;
+p.fs = 0.1;
+p.root = 0; <span class="comment">% 0=rc 1=root rc</span>
+M = 64;
+[h f H Hi] = win_method(<span class="string">'rc_filt'</span>, p, 0.2, 1, M, 0);
+<span class="comment">% Generate some random samples.</span>
+x = randn(Ns*Nb, 1);
+<span class="comment">% Type of simulation</span>
+stype = 1; <span class="comment">% Do simple convolution</span>
+<span class="comment">%stype = 1; % DSP-like filter</span>
+<span class="keyword">if</span> stype==0,
+ y = conv(x, h);
+<span class="keyword">elseif</span> stype==1,
+ <span class="comment">% Simulate realistic DSP filter</span>
+
+ <span class="comment">% ADD YOUR CODE HERE !!!</span>
+
+ state_fir1 = fir_init(h,Ns);
+ <span class="comment">% Reshape into buffers</span>
+ xb = reshape(x, Ns, Nb);
+ <span class="comment">% Output samples</span>
+ yb = zeros(Ns, Nb);
+ <span class="comment">% Process each buffer</span>
+ <span class="keyword">for</span> bi=1:Nb
+    [state_fir1 yb(:,bi)] = fir(state_fir1, xb(:,bi));
+ <span class="keyword">end</span>
+<span class="comment">% Convert individual buffers back into a contiguous signal.</span>
+y = reshape(yb, Ns*Nb, 1);
+
+
+
+<span class="keyword">else</span>
+ error(<span class="string">'Invalid simulation type.'</span>);
+<span class="keyword">end</span>
+<span class="comment">% Compute approximate transfer function using PSD</span>
+Npsd = 200; <span class="comment">% Blocksize (# of freq) for PSD</span>
+[Y1 f1] = periodogram(y, [], Npsd, 1);
+[X1 f1] = periodogram(x, [], Npsd, 1);
+plot(f1, abs(sqrt(Y1./X1)), f, abs(H));
+xlim([0 0.2]);
+</pre><img vspace="5" hspace="5" src="test_fir1_01.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% test_fir1.m
+%
+% Script to test the FIR filter.
+% Global parameters
+Nb = 100; % Number of buffers
+Ns = 128; % Samples in each buffer
+% Generate filter coefficients
+p.beta = 0.5;
+p.fs = 0.1;
+p.root = 0; % 0=rc 1=root rc
+M = 64;
+[h f H Hi] = win_method('rc_filt', p, 0.2, 1, M, 0);
+% Generate some random samples.
+x = randn(Ns*Nb, 1);
+% Type of simulation
+stype = 1; % Do simple convolution
+%stype = 1; % DSP-like filter
+if stype==0,
+ y = conv(x, h);
+elseif stype==1,
+ % Simulate realistic DSP filter
+ 
+ % ADD YOUR CODE HERE !!!
+ 
+ state_fir1 = fir_init(h,Ns);
+ % Reshape into buffers
+ xb = reshape(x, Ns, Nb);
+ % Output samples
+ yb = zeros(Ns, Nb);
+ % Process each buffer
+ for bi=1:Nb
+    [state_fir1 yb(:,bi)] = fir(state_fir1, xb(:,bi));
+ end
+% Convert individual buffers back into a contiguous signal.
+y = reshape(yb, Ns*Nb, 1);
+
+
+
+else
+ error('Invalid simulation type.');
+end
+% Compute approximate transfer function using PSD
+Npsd = 200; % Blocksize (# of freq) for PSD
+[Y1 f1] = periodogram(y, [], Npsd, 1);
+[X1 f1] = periodogram(x, [], Npsd, 1);
+plot(f1, abs(sqrt(Y1./X1)), f, abs(H));
+xlim([0 0.2]);
+##### SOURCE END #####
+--></body></html>
